@@ -1,6 +1,4 @@
 using EdgeDB;
-using System.Collections.Generic;
-using System.Linq;
 
 var builder = WebApplication.CreateBuilder();
 builder.Services.AddEdgeDB(EdgeDBConnection.FromInstanceName("hello-world"), config =>
