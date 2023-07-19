@@ -27,7 +27,7 @@ app.MapGet("/", async (EdgeDBClient client) => {
     </body>
     </html>
     """, "text/html");
-}).ShortCircuit(200);
+});
 
 app.Run();
 
