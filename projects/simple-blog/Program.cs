@@ -95,11 +95,16 @@ app.MapPost("/", async ([FromForm] BlogPostInput input, EdgeDBClient client, Htt
 
         await client.ExecuteAsync($$"""
             INSERT BlogPost {
-                title := "{{input.Title}}",
-                body := "{{input.Body}}",
+                title := <str>$Title,
+                body := <str>$Body,
                 status := BlogPostStatus.Pending
             }
-        """);
+        """, 
+        new Dictionary<string, object?>
+        {
+            { nameof(input.Title), input.Title },
+            { nameof(input.Body), input.Body }
+        });
 
         return Results.Redirect("/");
     }
