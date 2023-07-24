@@ -40,6 +40,7 @@ app.MapGet("/", async (EdgeDBClient client, HttpContext context, IAntiforgery an
                 </div>
                 <div class="col-md-6">
                     {{RenderBlogList(blogs)}}
+                </div>
             </div>
     """), "text/html");
 });
