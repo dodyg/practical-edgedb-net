@@ -19,10 +19,31 @@ var app = builder.Build();
 
 app.MapGet("/", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery) =>
 {
-    return Results.Content(Template("Hello"), "text/html");
+    return Results.Content(Template($$"""
+    <div class="row">
+        <div class="col-md-6">
+            <form>
+                <div class="mb-3">
+                    <label for="title">Title</label>
+                    <input type="text" name="Title" id="title" class="form-control"  />
+                </div>
+                <div class="mb-3">
+                    <label for="url">Url</label>
+                    <input type="text" name="Url" id="url" class="form-control"  />
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+
+        </div>
+    </div>
+    """), "text/html");
 });
 
-app.MapPost("/", async ([FromForm] BlogPostInput input, EdgeDBClient client, HttpContext context, IAntiforgery antiforgery, IValidator<BlogPostInput> validator) =>
+app.MapPost("/", async ([FromForm] ResourceInput input, EdgeDBClient client, HttpContext context, IAntiforgery antiforgery, IValidator<ResourceInput> validator) =>
 {
     static HtmlString ShowErrorMessage(FluentValidation.Results.ValidationResult result, string propertyName)
     {
@@ -54,7 +75,7 @@ static string Template(string body)
     return $$"""
     <html>
     <head>
-      <title>Simple Blog</title>
+      <title>Tagger</title>
       <link href="https://fastly.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
       <style>
         .error-feedback {
@@ -64,7 +85,7 @@ static string Template(string body)
     </head>
     <body>
         <div class="container">
-            <h1>Simple Blog</h1>
+            <h1>Tagger</h1>
             {{body}}
         </div>
     </body>
@@ -72,22 +93,43 @@ static string Template(string body)
     """;
 }
 
-
-public class BlogPostInput(string? title, string body)
+public class NamespaceInput(string name)
 {
-    public string? Title { get; set; } = title;
-    public string Body { get; set; } = body;
+    public string Name { get; set; } = name;
 
-    public BlogPostInput() : this(null, string.Empty)
+    public NamespaceInput() : this(string.Empty)
+    {
+
+    }
+}
+
+public class TagInput(string name, string description, string namespaceId)
+{
+    public string Name { get; set; } = name;
+    public string Description { get; set; } = description;
+
+    public string NamespaceId {get; set; } = namespaceId;
+}
+
+public class ResourceInput(string title, string url, List<string> tagIds)
+{
+    public string Title { get; set; } = title;
+
+    public string Url { get; set; } = url;
+
+    public List<string> TagIds { get; set; } = tagIds;
+
+    public ResourceInput() : this(string.Empty, string.Empty, new())
     {
 
     }
 
-    public class Validator : AbstractValidator<BlogPostInput>
+    public class Validator : AbstractValidator<ResourceInput>
     {
         public Validator()
         {
-            RuleFor(x => x.Body).NotEmpty().WithMessage("Body is required");
+            RuleFor(x => x.Url).NotEmpty().WithMessage("Title is required");
+            RuleFor(x => x.Url).NotEmpty().WithMessage("Url is required");
         }
     }
 }
@@ -98,5 +140,3 @@ public enum BlogPostStatus
     Deleted,
     Pending
 }
-
-public record BlogPost(Guid Id, string Title, string Body, BlogPostStatus Status, EdgeDB.DataTypes.DateTime DateCreated);
