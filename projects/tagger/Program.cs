@@ -14,6 +14,8 @@ builder.Services.AddEdgeDB(EdgeDBConnection.FromInstanceName("tagger"), config =
 
 builder.Services.AddAntiforgery();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddSingleton<DBCommand>();
+builder.Services.AddSingleton<DBQuery>();
 
 var app = builder.Build();
 
@@ -93,50 +95,3 @@ static string Template(string body)
     """;
 }
 
-public class NamespaceInput(string name)
-{
-    public string Name { get; set; } = name;
-
-    public NamespaceInput() : this(string.Empty)
-    {
-
-    }
-}
-
-public class TagInput(string name, string description, string namespaceId)
-{
-    public string Name { get; set; } = name;
-    public string Description { get; set; } = description;
-
-    public string NamespaceId {get; set; } = namespaceId;
-}
-
-public class ResourceInput(string title, string url, List<string> tagIds)
-{
-    public string Title { get; set; } = title;
-
-    public string Url { get; set; } = url;
-
-    public List<string> TagIds { get; set; } = tagIds;
-
-    public ResourceInput() : this(string.Empty, string.Empty, new())
-    {
-
-    }
-
-    public class Validator : AbstractValidator<ResourceInput>
-    {
-        public Validator()
-        {
-            RuleFor(x => x.Url).NotEmpty().WithMessage("Title is required");
-            RuleFor(x => x.Url).NotEmpty().WithMessage("Url is required");
-        }
-    }
-}
-
-public enum BlogPostStatus
-{
-    Active,
-    Deleted,
-    Pending
-}
