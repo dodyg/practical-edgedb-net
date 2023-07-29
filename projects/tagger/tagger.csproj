@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.8.0-1.23378.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EdgeDB.Net.Driver" Version="1.2.2" />
     <PackageReference Include="Markdig" Version="0.31.0" />
     <PackageReference Include="FluentValidation" Version="11.6.0" />

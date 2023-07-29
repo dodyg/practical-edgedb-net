@@ -1,7 +1,17 @@
 using EdgeDB;
+
+public record Paging(int Page, int PageSize)
+{
+    public int Offset => Page * PageSize;
+
+    public int Limit => PageSize;   
+
+    public static Paging Default => new(0, 50);
+}
+
 public class DBQuery(EdgeDBClient client)
 {
-    public async Task<Namespace?> GetNamespaceAsync(Guid id)
+    public async Task<Namespace?> GetNamespaceByIdAsync(Guid id)
     {
         return await client.QuerySingleAsync<Namespace>($$"""
             SELECT Namespace {
@@ -23,6 +33,82 @@ public class DBQuery(EdgeDBClient client)
             }
         """);
     }
+
+    public async Task<Tag?> GetTagByIdAsync(Guid id)
+    {
+        return await client.QuerySingleAsync<Tag>($$"""
+            SELECT Tag {
+                id,
+                name,
+                description,
+                namespace: {
+                    id,
+                    name
+                }
+            } FILTER .id = <uuid>$id
+        """, new Dictionary<string, object?>()
+        {
+            ["id"] = id
+        });
+    }
+
+    public async Task<IReadOnlyCollection<Tag>> GetTagsAsync(Paging paging)
+    {
+        return await client.QueryAsync<Tag>($$"""
+            SELECT Tag {
+                id,
+                name,
+                description,
+                namespace: {
+                    id,
+                    name
+                }
+            }
+        """);
+    }
+
+    public async Task<Resource?> GetResourceByIdAsync(Guid id)
+    {
+        return await client.QuerySingleAsync<Resource>($$"""
+            SELECT Resource {
+                id,
+                title,
+                url,
+                tags: {
+                    id,
+                    name,
+                    description,
+                    namespace: {
+                        id,
+                        name
+                    }
+                }
+            } FILTER .id = <uuid>$id
+        """, new Dictionary<string, object?>()
+        {
+            ["id"] = id
+        });
+    }
+
+    public async Task<IReadOnlyCollection<Resource>> GetResourcesAsync()
+    {
+        return await client.QueryAsync<Resource>($$"""
+            SELECT Resource {
+                id,
+                title,
+                url,
+                tags: {
+                    id,
+                    name,
+                    description,
+                    namespace: {
+                        id,
+                        name
+                    }
+                }
+            }
+        """);
+    }       
 }
 
 public class DBCommand(EdgeDBClient client)

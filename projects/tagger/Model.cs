@@ -12,6 +12,8 @@ public class NamespaceInput(string name)
     }
 }
 
+public class Tag(Guid Id, string Name, string Description, Namespace Namespace);
+
 public class TagInput(string name, string description, string namespaceId)
 {
     public string Name { get; set; } = name;
@@ -19,6 +21,8 @@ public class TagInput(string name, string description, string namespaceId)
 
     public string NamespaceId {get; set; } = namespaceId;
 }
+
+public class Resource(Guid Id, string Title, string Url, List<Tag> Tags);
 
 public class ResourceInput(string title, string url, List<string> tagIds)
 {
@@ -43,9 +47,3 @@ public class ResourceInput(string title, string url, List<string> tagIds)
     }
 }
 
-public enum BlogPostStatus
-{
-    Active,
-    Deleted,
-    Pending
-}
