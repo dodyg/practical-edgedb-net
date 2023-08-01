@@ -19,9 +19,24 @@ builder.Services.AddSingleton<DBQuery>();
 
 var app = builder.Build();
 
+HtmlString ShowErrorMessage(FluentValidation.Results.ValidationResult result, string propertyName)
+{
+    var found = result.Errors.Where(x => x.PropertyName.Equals(propertyName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+    if (found is null)
+        return HtmlString.Empty;
+    else
+        return new HtmlString($$"""
+            <div class="error-feedback">
+                {{found.ErrorMessage}}
+            </div>
+            """);
+}
+
+
 app.MapGet("/", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery) =>
 {
     return Results.Content(Template($$"""
+    <h1>Resources</h1>
     <div class="row">
         <div class="col-md-6">
             <form>
@@ -47,19 +62,6 @@ app.MapGet("/", async (EdgeDBClient client, HttpContext context, IAntiforgery an
 
 app.MapPost("/", async ([FromForm] ResourceInput input, EdgeDBClient client, HttpContext context, IAntiforgery antiforgery, IValidator<ResourceInput> validator) =>
 {
-    static HtmlString ShowErrorMessage(FluentValidation.Results.ValidationResult result, string propertyName)
-    {
-        var found = result.Errors.Where(x => x.PropertyName.Equals(propertyName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-        if (found is null)
-            return HtmlString.Empty;
-        else
-            return new HtmlString($$"""
-                <div class="error-feedback">
-                    {{found.ErrorMessage}}
-                </div>
-                """);
-    }
-
     try
     {
         return Results.Redirect("/");
@@ -68,6 +70,66 @@ app.MapPost("/", async ([FromForm] ResourceInput input, EdgeDBClient client, Htt
     {
         return TypedResults.BadRequest("Invalid anti-forgery token");
     }
+});
+
+app.MapGet("/tags", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery) =>
+{
+    return Results.Content(Template($$"""
+    <h1>Tags</h1>
+    <div class="row">
+        <div class="col-md-6">
+        </div>
+        <div class="col-md-6">
+
+        </div>
+    </div>
+    """), "text/html");
+});
+
+app.MapGet("/namespaces", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery) =>
+{
+    return Results.Content(Template($$"""
+    <h1>Namespaces</h1>
+    <div class="row">
+        <div class="col-md-6">
+              <form action="post">
+                <div class="mb-3">
+                    <label for="title">Name</label>
+                    <input type="text" name="Name" id="name" class="form-control"  />
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+
+        </div>
+    </div>
+    """), "text/html");
+});
+
+app.MapPost("/namespaces", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery) =>
+{
+    return Results.Content(Template($$"""
+    <h1>Namespaces</h1>
+    <div class="row">
+        <div class="col-md-6">
+              <form>
+                <div class="mb-3">
+                    <label for="title">Name</label>
+                    <input type="text" name="Name" id="name" class="form-control"  />
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+
+        </div>
+    </div>
+    """), "text/html");
 });
 
 app.Run();
@@ -86,8 +148,29 @@ static string Template(string body)
       </style>
     </head>
     <body>
+        <header>
+            <div class="container">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">Tagger</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="/tags">Tags</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/namespaces">Namespaces</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                </nav>
+            </div>
+        </header>
         <div class="container">
-            <h1>Tagger</h1>
             {{body}}
         </div>
     </body>
