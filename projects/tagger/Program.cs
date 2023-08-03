@@ -94,7 +94,7 @@ app.MapGet("/namespaces", async (EdgeDBClient client, HttpContext context, IAnti
         <div class="col-md-6">
               <form method="post" action="/namespaces">
                 <div class="mb-3">
-                    <label for="title">Name</label>
+                    <label for="name">Name</label>
                     <input type="text" name="Name" id="name" class="form-control"  />
                 </div>
                 <div class="mb-3">
