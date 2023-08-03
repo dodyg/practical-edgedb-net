@@ -10,6 +10,14 @@ public class NamespaceInput(string name)
     {
 
     }
+
+    public class Validator : AbstractValidator<NamespaceInput>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Name).NotEmpty().WithMessage("Name is required");
+        }
+    }
 }
 
 public class Tag(Guid Id, string Name, string Description, Namespace Namespace);

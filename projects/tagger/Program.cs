@@ -92,7 +92,7 @@ app.MapGet("/namespaces", async (EdgeDBClient client, HttpContext context, IAnti
     <h1>Namespaces</h1>
     <div class="row">
         <div class="col-md-6">
-              <form action="post">
+              <form method="post" action="/namespaces">
                 <div class="mb-3">
                     <label for="title">Name</label>
                     <input type="text" name="Name" id="name" class="form-control"  />
@@ -109,27 +109,45 @@ app.MapGet("/namespaces", async (EdgeDBClient client, HttpContext context, IAnti
     """), "text/html");
 });
 
-app.MapPost("/namespaces", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery) =>
+app.MapPost("/namespaces", async (EdgeDBClient client, HttpContext context, IAntiforgery antiforgery, [FromForm] NamespaceInput input, IValidator<NamespaceInput> validator) =>
 {
-    return Results.Content(Template($$"""
-    <h1>Namespaces</h1>
-    <div class="row">
-        <div class="col-md-6">
-              <form>
-                <div class="mb-3">
-                    <label for="title">Name</label>
-                    <input type="text" name="Name" id="name" class="form-control"  />
-                </div>
-                <div class="mb-3">
-                    <button type="submit" class="btn btn-primary">Save</button>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
+    try
+    {
+        await antiforgery.ValidateRequestAsync(context);
+        FluentValidation.Results.ValidationResult validationResult = await validator.ValidateAsync(input);
 
-        </div>
-    </div>
-    """), "text/html");
+        if (validationResult.IsValid == false)
+        {
+            var token = antiforgery.GetAndStoreTokens(context);
+            return Results.Content(Template($$"""
+            <h1>Namespaces</h1>
+            <div class="row">
+                <div class="col-md-6">
+                    <form>
+                        <input name="{{token.FormFieldName}}" type="hidden" value="{{token.RequestToken}}" />
+                        <div class="mb-3">
+                            <label for="title">Name</label>
+                            <input type="text" name="Name" id="name" class="form-control" value="{{ input.Name }}"  />
+                            {{ShowErrorMessage(validationResult, nameof(input.Name))}}
+                        </div>
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+
+                </div>
+            </div>
+            """), "text/html");
+        }
+
+        return Results.Redirect("/namespaces");
+    }
+    catch(Exception ex)
+    {
+        return Results.BadRequest(ex.Message);
+    }
 });
 
 app.Run();
